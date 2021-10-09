@@ -1,41 +1,36 @@
-const http=require("http");
-const url=require("url");
 const fs=require("fs");
+const path=require("path")
 const bodyParser = require('body-parser');
-const server=http.createServer()
+const express=require("express")
+const server=express()
+const mongoose=require("mongoose")
+const Port=process.env.PORT ||3000;
+var dbConn =mongoose.connect("mongodb://localhost:27017/fynddb2").then(()=>{
+    console.log("Connect to DB")
+}).catch((error)=>{
+    console.error(error)
+})
 
-server.on("request", (req, res)=>{
-    if(req.url=="/"){
-        res.setHeader("content-type", "text/html")
-        fs.readFile("./index.html", null, function(error, data){
-            if(error){
-                console.error(error.message)
-                res.end("File not found!")
-                
-            }else{
-                res.write(data)
-                res.end()
-            }
-        })
+const static_path=path.join(__dirname, "../public")
 
-    }else if(req.url=="/contact"){
-        res.setHeader("content-type", "text/html")
-        fs.readFile("./contact.html", null, function(error, data){
-            if(error){
-                console.error(error.message)
-                res.end("File not found!")
-                
-            }else{
-                res.send(`Full name is:${req.body.fname} ${req.body.lname}.`);
-                res.write(data)
-                res.end()
-            }
-        })
+server.use(express.static(static_path));
+server.set("view engine", "ejs")
 
-    }
 
+
+server.get("/", (req, res)=>{
+    res.render("index")
+})
+
+server.get("/contact", (req, res)=>{
+    return res.render("contact")
+})
+
+server.post("/contact", (req, res)=>{
+    return res.redirect("/")
 })
 
 
-
-server.listen(3000)
+server.listen(Port, (req, res)=>{
+    console.log(`http://localhost:${Port}`)
+})
